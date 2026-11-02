@@ -1,0 +1,29 @@
+C++ vs. Python: Choosing the Right Language
+
+C++ and Python are not at war — they serve different purposes and are often
+used together in the same project.
+
+C++ strengths:
+- High performance and fine-grained memory control
+- Systems programming, game engines, embedded devices
+- The standard library includes powerful containers and algorithms
+- Compile-time abstractions via templates
+
+Python strengths:
+- Rapid prototyping and high readability
+- Rich ecosystem for data science and machine learning
+- Excellent for scripting, automation, and web backends
+- Extensive third-party libraries (numpy, pandas, pytorch)
+
+When to choose C++:
+Performance-critical paths, real-time systems, or environments where memory
+footprint matters. Unreal Engine uses C++ for its core logic.
+
+When to choose Python:
+Data pipelines, machine learning experiments, scripting, and anywhere that
+developer speed matters more than raw execution speed.
+
+Many projects use both: C++ for the hot path, Python for glue code and tooling.
+The numpy library, for example, is C++ under the hood with a Python interface.
+Searching for "C++" presents a challenge: the plus signs are typically treated
+as punctuation and stripped, reducing the query to just "c".

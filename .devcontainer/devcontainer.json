@@ -1,0 +1,17 @@
+{
+  "name": "COSI 106B - HW3",
+  "image": "ghcr.io/brandeis-cosi-106b/hw3-fa26:latest",
+  "remoteUser": "vscode",
+  "containerEnv": {
+    "PYTHONPATH": "${containerWorkspaceFolder}/src"
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "charliermarsh.ruff",
+        "github.vscode-github-actions"
+      ]
+    }
+  }
+}

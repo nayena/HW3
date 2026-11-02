@@ -1,0 +1,32 @@
+Software Testing: Foundations and Limits
+
+Software testing is the primary mechanism by which we gain confidence in a
+program's correctness. But testing has fundamental epistemic limits.
+
+Dijkstra's observation:
+"Testing can show the presence of bugs, but never their absence."
+This is not a deficiency of testing — it is a logical constraint. No finite
+test suite can prove a program correct for all possible inputs.
+
+Categories of testing:
+- Unit tests: test individual functions or modules in isolation
+- Integration tests: test how components interact
+- Property-based tests: check that a property holds across many generated inputs
+- Regression tests: ensure previously discovered bugs do not recur
+
+Property-based testing:
+Rather than writing individual input-output examples, property-based testing
+generates many random inputs and checks that a predicate (property) holds for
+all of them. This approach can find bugs that human-chosen test cases miss,
+especially edge cases involving unusual inputs.
+
+Mutation testing:
+If tests are meant to catch bugs, we can evaluate test quality by
+artificially introducing bugs (mutations) and checking whether the tests
+detect them. A test suite that lets many mutants survive is a weak test suite.
+Mutation testing operationalizes the otherwise slippery question: "How good
+are these tests, really?"
+
+The limits of any individual testing strategy motivate combining strategies:
+example-based tests for known cases, property-based tests for exploration,
+and mutation testing for evaluation.

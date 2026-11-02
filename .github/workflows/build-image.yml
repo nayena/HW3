@@ -1,0 +1,51 @@
+# Builds the HW3 development image and publishes it to GitHub Container Registry.
+#
+# For course staff: it runs in the staff repository (brandeis-cosi-106b/hw3,
+# branch fa26). The `if:` below makes it a no-op in the student release repository
+# and in student copies. Students never need to run it.
+
+name: Build dev image
+
+on:
+  push:
+    branches: [fa26]
+    paths:
+      - '.devcontainer/**'
+      - '.github/workflows/build-image.yml'
+      - 'pyproject.toml'
+      - 'uv.lock'
+      - '.python-version'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    if: github.repository == 'brandeis-cosi-106b/hw3'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # arm64 emulation so Apple Silicon Macs get a native image
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: .devcontainer/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ghcr.io/brandeis-cosi-106b/hw3-fa26:latest
+            ghcr.io/brandeis-cosi-106b/hw3-fa26:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

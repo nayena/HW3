@@ -1,0 +1,27 @@
+Getting Started with Node.js
+
+Node.js is a JavaScript runtime built on Chrome's V8 JavaScript engine. It lets
+developers run JavaScript outside of a browser, enabling server-side scripting
+and command-line tools.
+
+Why Node.js?
+- Asynchronous, event-driven architecture suits I/O-heavy workloads
+- Enormous ecosystem via npm, the Node Package Manager
+- One language on both client and server
+- Active community and strong tooling
+
+Installing Node.js:
+Download from the Node.js website or use a version manager such as nvm (the
+Node Version Manager) to switch between multiple Node.js versions on one machine.
+
+Common frameworks built on Node.js:
+- Express.js: minimal, flexible web framework
+- Fastify: performance-focused alternative to Express
+- NestJS: structured, opinionated framework for larger applications
+
+Node.js is frequently compared to Python for backend tasks. Node.js tends to
+excel in I/O-bound scenarios; Python has a richer data science ecosystem.
+
+The name "Node.js" contains a dot, which is typically treated as punctuation
+and stripped during normalization. Whether "node.js" normalizes to "nodejs"
+or to two tokens ["node", "js"] depends on the normalization strategy chosen.

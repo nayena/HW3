@@ -1,0 +1,108 @@
+# CI Workflow for HW3 - Search Engine Testing
+#
+# This workflow runs only when you start it by hand: on GitHub, open the Actions
+# tab, choose "CI", and click "Run workflow".
+#
+# In most projects, CI runs automatically on every push and pull request, with a
+# trigger like this instead of `workflow_dispatch`:
+#
+#   on:
+#     push:
+#       branches: [main]
+#     pull_request:
+#       branches: [main]
+#
+# We don't do that here because your repository is private: GitHub Actions minutes
+# for private repositories come out of your personal account's free monthly
+# quota, which other courses may need too. Run the checks in your container
+# first (`make check`), and use CI to confirm.
+#
+# Every job runs inside the same Docker image you develop in (see
+# .devcontainer/), with all tools and Python packages preinstalled, so a command
+# that passes in your container should pass here, and on Gradescope, too.
+#
+# Jobs:
+# 1. quality      - Linting (ruff)
+# 2. tests        - The test suite (pytest), which must pass once the assignment is done
+# 3. test-quality - Grading checks (tests/grading/) and a minimum test count
+# 4. mutation     - Mutation testing (mutmut), without and then with your Hypothesis
+#                   tests, and your Task 8 kill claim. Reports only; never fails the run
+
+name: CI
+
+on:
+  workflow_dispatch:
+
+jobs:
+  quality:
+    name: Code Quality (lint)
+    runs-on: ubuntu-latest
+    container: ghcr.io/brandeis-cosi-106b/hw3-fa26:latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run linter (ruff)
+        run: ruff check src/
+
+  tests:
+    name: Tests
+    runs-on: ubuntu-latest
+    container: ghcr.io/brandeis-cosi-106b/hw3-fa26:latest
+    needs: quality
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run tests
+        run: pytest
+
+  test-quality:
+    name: Test Suite Quality
+    runs-on: ubuntu-latest
+    container: ghcr.io/brandeis-cosi-106b/hw3-fa26:latest
+    needs: tests
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Grading checks (check_property, generators, bug detection, fixes)
+        run: pytest tests/grading/
+
+      - name: Minimum new-test count
+        # Counts the tests collected from the files you write tests in.
+        # The starter code has BASELINE tests; Task 2 asks for at least 6 more.
+        run: |
+          BASELINE=29
+          MINIMUM=$((BASELINE + 6))
+          COUNT=$(python scripts/count_tests.py)
+          echo "Tests collected: ${COUNT} (minimum required: ${MINIMUM})"
+          if [ -z "$COUNT" ] || [ "$COUNT" -lt "$MINIMUM" ]; then
+            echo "ERROR: fewer than ${MINIMUM} tests collected. Add at least 6 new tests (Task 2)."
+            exit 1
+          fi
+
+  mutation:
+    name: Mutation Testing (report only)
+    runs-on: ubuntu-latest
+    container: ghcr.io/brandeis-cosi-106b/hw3-fa26:latest
+    needs: tests
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run mutmut without your Hypothesis tests
+        # mutmut exits with an error when mutants survive, which is expected.
+        env:
+          PYTEST_ADDOPTS: '-m "not hypothesis"'
+        run: mutmut run || true
+
+      - name: List surviving mutants (without your Hypothesis tests)
+        run: mutmut results
+
+      - name: Run mutmut with all your tests
+        run: |
+          rm -rf mutants/
+          mutmut run || true
+
+      - name: List surviving mutants (all your tests)
+        run: mutmut results
+
+      - name: Check the mutants your tests claim to kill (Task 8)
+        run: python scripts/check_kills.py || true

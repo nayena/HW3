@@ -1,0 +1,33 @@
+Search Normalization: Design Decisions and Trade-offs
+
+Text normalization for search engines involves a series of decisions that
+collectively determine what counts as "the same" for retrieval purposes.
+
+Common normalization steps:
+- Lowercasing: "Python" and "python" match the same documents
+- Accent folding: "résumé" and "resume" treated equivalently
+- Punctuation stripping: "node.js" may become "node" or "nodejs"
+- Hyphen handling: "co-op" may become "coop", "co op", or stay "co-op"
+- Stopword removal: "the", "a", "in" may be dropped entirely
+- Stemming or lemmatization: "running" → "run" (not used here)
+
+Each decision affects recall (finding relevant documents) and precision
+(avoiding irrelevant ones). Aggressive normalization increases recall at
+the cost of precision; conservative normalization does the reverse.
+
+Human-centered correctness:
+"Correctness" in search is not purely a technical question. It depends on
+what users expect and what distinctions they care about.
+
+- A user who types "résumé" probably wants results about résumés, whether
+  documents use the accented or unaccented form. Accent folding helps here.
+- A user who searches for "naive" may or may not want results for "naïve".
+  In technical writing, the distinction can matter.
+- A user who types "co-op" probably does not want results about chicken coops.
+  Hyphen removal that collapses "co-op" into "coop" introduces noise.
+- A user who searches for "The Who" has no way to find results if the system
+  strips both "the" and "who" as stopwords.
+
+A key principle: whatever normalization is applied to documents at index time
+must also be applied to queries at search time. Inconsistency between these
+two normalization paths is a common and subtle source of bugs.

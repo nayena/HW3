@@ -1,0 +1,8 @@
+# Force Unix line endings. Windows checkouts otherwise turn LF into CRLF, which
+# breaks Bash scripts ("$'\r': command not found") and Makefiles inside Linux
+# containers.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.pdf binary

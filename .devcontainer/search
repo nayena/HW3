@@ -1,0 +1,5 @@
+#!/bin/sh
+# Runs the HW3 search engine: `search --help`, `search explain "naïve"`, ...
+# Uses the src/ folder of the repository you are in, so your own edits apply.
+root=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
+PYTHONPATH="$root/src${PYTHONPATH:+:$PYTHONPATH}" exec python -m searchengine "$@"

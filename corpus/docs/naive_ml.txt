@@ -1,0 +1,26 @@
+Naïve Approaches to Machine Learning
+
+The word naïve — also commonly spelled naive without the diaeresis — appears
+frequently in machine learning literature. The Naïve Bayes classifier, despite
+its somewhat dismissive name, is remarkably effective for text classification.
+
+Why "naïve"?
+The classifier assumes features are conditionally independent given the class
+label. This is a naïve assumption: in reality, word co-occurrences are not
+independent. Despite this simplification, Naïve Bayes performs surprisingly
+well on many real-world tasks, especially in natural language processing.
+
+Variants of Naïve Bayes:
+- Gaussian Naïve Bayes: continuous features
+- Multinomial Naïve Bayes: discrete count features (common for text)
+- Bernoulli Naïve Bayes: binary presence/absence features
+
+The diaeresis over the "i" in naïve signals that the two vowels are pronounced
+separately — "nah-EEV" rather than "nave". In modern English, the diaeresis is
+becoming less common; many style guides now accept "naive" as the default form.
+
+This document is a useful test case for search normalization: a system that
+folds accents should treat "naïve" and "naive" as the same query. A system that
+does not fold accents in queries will behave inconsistently.
+
+See also: résumé (accented), coöperate (archaic diaeresis spelling of cooperate).

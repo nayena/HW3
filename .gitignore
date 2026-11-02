@@ -1,0 +1,32 @@
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Python bytecode
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Test and tool caches
+.pytest_cache/
+.ruff_cache/
+.mutmut-cache
+html/
+mutants/
+.hypothesis/
+
+# Build artifacts
+*.egg-info/
+dist/
+build/
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Claude Code
+.claude/

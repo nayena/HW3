@@ -1,0 +1,25 @@
+The Who: A Complete Overview
+
+The Who are a British rock band formed in London in 1964. The band consists of
+Roger Daltrey (lead vocals), Pete Townshend (guitar), John Entwistle (bass),
+and Keith Moon (drums). Keith Moon died in 1978 and was later replaced by
+Kenney Jones.
+
+The Who are known for explosive live performances and the deliberate destruction
+of instruments on stage. Pete Townshend is credited with popularizing the
+windmill guitar technique.
+
+Key albums:
+- My Generation (1965) — debut album, raw and confrontational
+- Tommy (1969) — the first major rock opera
+- Who's Next (1971) — widely regarded as their best work
+- Quadrophenia (1973) — a second rock opera, set in 1960s London
+
+The song "My Generation" features the famous stutter and the defiant lyric
+"hope I die before I get old."
+
+Searching for "The Who" illustrates a core stopword problem in information
+retrieval: both "the" and "who" are frequently treated as stopwords and removed
+during normalization. A search engine that strips all stopwords will return
+no results for this query, even though "The Who" is a specific proper noun.
+This is a well-known human-centered correctness problem in search.
