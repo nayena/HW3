@@ -40,15 +40,15 @@ def normalize_document(text: str) -> list[str]:
     """Normalize a document string and return a list of index tokens.
 
     Steps:
-        1. Lowercase
-        2. Fold diacritics  (naïve -> naive, résumé -> resume)
+        1. Fold diacritics  (naïve -> naive, résumé -> resume)
+        2. Lowercase  (after folding: NFKD can produce uppercase, e.g. ℠ -> "SM")
         3. Replace hyphens with spaces  (co-op -> "co op")
         4. Strip remaining punctuation
         5. Split on whitespace
         6. Filter empty strings and stopwords
     """
-    text = text.lower()
     text = fold_diacritics(text)
+    text = text.lower()
     text = text.replace("-", " ")
     text = re.sub(r"[^\w\s]", "", text)
     tokens = text.split()
@@ -59,14 +59,16 @@ def normalize_query(text: str) -> list[str]:
     """Normalize a query string and return a list of search tokens.
 
     Steps:
-        1. Lowercase
-        2. Handle hyphens
-        3. Strip remaining punctuation
-        4. Split on whitespace
-        5. Filter empty strings and stopwords
+        1. Fold diacritics  (must match normalize_document)
+        2. Lowercase  (after folding, same as normalize_document)
+        3. Replace hyphens with spaces  (co-op -> "co op", must match normalize_document)
+        4. Strip remaining punctuation
+        5. Split on whitespace
+        6. Filter empty strings and stopwords
     """
+    text = fold_diacritics(text)
     text = text.lower()
-    text = text.replace("-", "")
+    text = text.replace("-", " ")
     text = re.sub(r"[^\w\s]", "", text)
     tokens = text.split()
     return [t for t in tokens if t and t not in STOPWORDS]

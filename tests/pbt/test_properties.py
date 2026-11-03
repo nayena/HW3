@@ -12,8 +12,14 @@ Task 6: When check_property finds a failure, manually minimize the counterexampl
 
 from __future__ import annotations
 
+import unicodedata
+
+from searchengine.normalize import normalize_query
+
 from .checker import check_property
 from .generators import (
+    diacritic_word,
+    hyphenated_phrase,
     random_printable,
     random_sentence,
     random_word,
@@ -24,15 +30,60 @@ from .properties import (
     prop_query_document_consistent,
 )
 
-# Generators for Tasks 4-5 (import them when you implement them):
-# from .generators import diacritic_word, hyphenated_phrase
+# ---------------------------------------------------------------------------
+# Task 4: new properties
+# ---------------------------------------------------------------------------
 
-# ---------------------------------------------------------------------------
-# TODO (Task 4): Add at least one new test class below.
-# Use check_property with one of the provided properties from .properties
-# and a generator of your choice. Which generator is most likely to find
-# a failure for each property?
-# ---------------------------------------------------------------------------
+
+def prop_query_hyphen_is_word_break(text: str) -> bool:
+    """In a query, a hyphen separates words exactly like a space does.
+
+    "co-op" must search for the same tokens as "co op". This checks
+    normalize_query on its own (not against normalize_document): it fails if
+    the query side deletes hyphens and glues the parts together ("coop").
+    """
+    return normalize_query(text) == normalize_query(text.replace("-", " "))
+
+
+def prop_query_tokens_have_no_diacritics(text: str) -> bool:
+    """Every query token is fully folded: decomposing it reveals no combining marks.
+
+    The index only ever contains folded tokens, so a query token that still
+    carries a diacritic (e.g. 'naïve') can never match anything.
+    """
+    return all(
+        unicodedata.category(c) != "Mn"
+        for token in normalize_query(text)
+        for c in unicodedata.normalize("NFKD", token)
+    )
+
+
+class TestQueryHyphenIsWordBreak:
+    def test_hyphen_is_word_break_hyphenated_phrases(self) -> None:
+        """A hyphen in a query behaves like a space (hyphenated_phrase generator).
+
+        random_word/random_sentence never produce a hyphen, so they could never
+        falsify this property; hyphenated_phrase always does.
+        """
+        passed, counterexample = check_property(
+            prop_query_hyphen_is_word_break,
+            hyphenated_phrase,
+            trials=300,
+            seed=5,
+        )
+        assert passed, f"Hyphen not treated as a word break for: {counterexample!r}"
+
+
+class TestQueryTokensFolded:
+    def test_query_tokens_folded_diacritic_words(self) -> None:
+        """Query tokens contain no diacritics (diacritic_word generator)."""
+        passed, counterexample = check_property(
+            prop_query_tokens_have_no_diacritics,
+            diacritic_word,
+            trials=300,
+            seed=5,
+        )
+        assert passed, f"Query token still has a diacritic for: {counterexample!r}"
 
 
 # ---------------------------------------------------------------------------
@@ -63,8 +114,15 @@ class TestNoEmptyTokens:
         )
         assert passed, f"Empty token found for input: {counterexample!r}"
 
-    # TODO (Task 5): After implementing hyphenated_phrase, add a test here
-    # that uses it. Does it find a failure the printable generator missed?
+    def test_no_empty_tokens_hyphenated(self) -> None:
+        """No empty tokens from hyphenated phrases (e.g. a lone '-' between words)."""
+        passed, counterexample = check_property(
+            prop_no_empty_tokens_document,
+            hyphenated_phrase,
+            trials=300,
+            seed=1,
+        )
+        assert passed, f"Empty token found for input: {counterexample!r}"
 
 
 class TestQueryDocumentConsistency:
@@ -82,8 +140,25 @@ class TestQueryDocumentConsistency:
         )
         assert passed, f"Normalization mismatch for: {counterexample!r}"
 
-    # TODO (Task 5): Add a test using diacritic_word as the generator, and one
-    # using hyphenated_phrase. Each should find a failure on the starter code.
+    def test_consistency_diacritic_words(self) -> None:
+        """Query and document normalization agree on words with diacritics."""
+        passed, counterexample = check_property(
+            prop_query_document_consistent,
+            diacritic_word,
+            trials=300,
+            seed=7,
+        )
+        assert passed, f"Normalization mismatch for: {counterexample!r}"
+
+    def test_consistency_hyphenated_phrases(self) -> None:
+        """Query and document normalization agree on hyphenated phrases."""
+        passed, counterexample = check_property(
+            prop_query_document_consistent,
+            hyphenated_phrase,
+            trials=300,
+            seed=7,
+        )
+        assert passed, f"Normalization mismatch for: {counterexample!r}"
 
 
 
@@ -106,3 +181,35 @@ class TestQueryDocumentConsistency:
 # - Named clearly so future readers understand what bug it guards against
 # - Accompanied by a docstring explaining how the failure was discovered
 # - Standalone (does not call check_property; uses the specific failing input)
+
+
+def test_regression_diacritic_query_not_folded() -> None:
+    """Regression: normalize_query did not fold diacritics; normalize_document did.
+
+    Original counterexample : 'muÏ' (diacritic_word generator, seed=7)
+    Minimized counterexample: 'ï'
+
+    Minimization: dropping 'mu' kept the failure ('Ï' alone fails) and lowercasing
+    it did too, so a single letter with a diacritic is enough. Removing the Ï
+    ('mu') makes it pass: the accent is the whole cause. Document gave ['i'],
+    query gave ['ï'].
+    """
+    assert prop_query_document_consistent("ï"), (
+        "ï: document folds the diaeresis to 'i', query must do the same"
+    )
+
+
+def test_regression_hyphen_query_glued() -> None:
+    """Regression: normalize_query deleted hyphens instead of splitting on them.
+
+    Original counterexample : 'Ex-dlsbqgbcn;' (hyphenated_phrase generator, seed=7)
+    Minimized counterexample: 'x-y'
+
+    Minimization: the trailing ';', the capital letter and the long second part
+    were all irrelevant ('ex-d' still fails). Any two non-stopword parts joined by
+    one hyphen reproduce it; a hyphen at an edge ('x-', '-y') does not, because
+    there is nothing to glue. Document gave ['x', 'y'], query gave ['xy'].
+    """
+    assert prop_query_document_consistent("x-y"), (
+        "x-y: document splits on the hyphen into ['x', 'y'], query must do the same"
+    )

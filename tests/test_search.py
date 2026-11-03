@@ -88,8 +88,17 @@ class TestEdgeCaseSearch:
         doc_ids = [r.doc_id for r in results]
         assert "coop_programs" in doc_ids
 
-    # TODO (Task 2): Add at least two more integration tests.
-    # Ideas:
-    # - "résumé" should find the resume tips document
-    # - A multi-word query that should return a specific known document
-    # - Verify that fixing the bugs does not break other queries
+    def test_resume_with_accents_finds_document(self, engine: SearchEngine) -> None:
+        accented = [r.doc_id for r in engine.search("résumé")]
+        plain = [r.doc_id for r in engine.search("resume")]
+        assert "resume_tips" in accented
+        assert accented == plain
+
+    def test_accented_and_plain_queries_match_same_docs(self, engine: SearchEngine) -> None:
+        accented = [r.doc_id for r in engine.search("naïve")]
+        plain = [r.doc_id for r in engine.search("naive")]
+        assert accented == plain == ["naive_ml", "search_normalization"]
+
+    def test_two_word_query_finds_specific_document(self, engine: SearchEngine) -> None:
+        results = engine.search("naive bayes")
+        assert [r.doc_id for r in results] == ["naive_ml"]

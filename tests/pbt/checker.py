@@ -71,17 +71,14 @@ def check_property(
     ...     return ''.join(rng.choice('abc') for _ in range(rng.randint(0, 15)))
     >>> passed, ce = check_property(prop_short, gen_string, trials=50, seed=42)
     """
-    # TODO (Task 3): Implement this function.
-    #
-    # Steps:
-    #   1. Create a random.Random instance.
-    #      If `seed` is not None, call rng.seed(seed) on it.
-    #   2. Loop `trials` times:
-    #      a. Generate an input:  inp = generator(rng)
-    #      b. Try calling prop(inp).
-    #         - If it returns False → return (False, inp)
-    #         - If it raises any exception → return (False, inp)
-    #   3. If all trials pass → return (True, None)
-    raise NotImplementedError(
-        "Implement check_property in tests/pbt/checker.py (Task 3)"
-    )
+    rng = random.Random()
+    if seed is not None:
+        rng.seed(seed)
+    for _ in range(trials):
+        inp = generator(rng)
+        try:
+            if not prop(inp):
+                return False, inp
+        except Exception:
+            return False, inp
+    return True, None

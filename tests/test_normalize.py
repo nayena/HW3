@@ -59,11 +59,25 @@ class TestNormalizeDocument:
         result = normalize_document("hello   world")
         assert "" not in result
 
-    # TODO (Task 2): Add tests for:
-    # - Diacritics in documents (e.g., "naïve", "résumé")
-    # - Hyphenated words (e.g., "co-op" → how many tokens? what are they?)
-    # - The token "C++" (what does normalization produce?)
-    # - "node.js" (what does normalization produce?)
+    def test_diacritics_folded_naive(self) -> None:
+        assert normalize_document("naïve") == ["naive"]
+
+    def test_diacritics_folded_resume_uppercase(self) -> None:
+        assert normalize_document("RÉSUMÉ") == ["resume"]
+
+    def test_hyphen_splits_into_two_tokens(self) -> None:
+        assert normalize_document("co-op") == ["co", "op"]
+
+    def test_hyphen_chain_drops_stopword_parts(self) -> None:
+        assert normalize_document("state-of-the-art") == ["state", "art"]
+
+    def test_cpp_loses_plus_signs(self) -> None:
+        """'C++' becomes the single letter 'c': the '+' signs are punctuation."""
+        assert normalize_document("C++") == ["c"]
+
+    def test_nodejs_dot_removed_not_split(self) -> None:
+        """The '.' is stripped, not turned into a space, so it is one token."""
+        assert normalize_document("node.js") == ["nodejs"]
 
 
 # ---------------------------------------------------------------------------
@@ -86,9 +100,18 @@ class TestNormalizeQuery:
         result = normalize_query("hello   world")
         assert "" not in result
 
-    # TODO (Task 2): Add tests for:
-    # - Diacritics in queries (compare with normalize_document!)
-    # - Hyphenated words (compare with normalize_document!)
+    def test_diacritics_folded(self) -> None:
+        assert normalize_query("Résumé") == ["resume"]
+
+    def test_hyphen_splits(self) -> None:
+        assert normalize_query("well-known") == ["well", "known"]
+
+    def test_strips_punctuation(self) -> None:
+        """A query with punctuation searches for the bare words.
+
+        Kills mutant: searchengine.normalize.x_normalize_query__mutmut_19
+        """
+        assert normalize_query("Node.js, please!") == ["nodejs", "please"]
 
 
 # ---------------------------------------------------------------------------
@@ -123,5 +146,8 @@ class TestNormalizationConsistency:
         """
         assert normalize_query("co-op") == normalize_document("co-op")
 
-    # TODO (Task 2): Add at least two more consistency tests with inputs
-    # that are likely to surface disagreements between the two normalizers.
+    def test_resume_consistency(self) -> None:
+        assert normalize_query("résumé") == normalize_document("résumé")
+
+    def test_multi_hyphen_consistency(self) -> None:
+        assert normalize_query("state-of-the-art") == normalize_document("state-of-the-art")
